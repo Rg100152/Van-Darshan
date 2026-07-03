@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 Van Darshan | Safari Zoo Ticket Booking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2ECC71;
+            --secondary: #27AE60;
+            --accent: #F1C40F;
+            --bg: #08120A;
+            --card: #16231B;
+            --glass-bg: rgba(22, 35, 27, 0.7);
+            --glass-border: rgba(46, 204, 113, 0.2);
+            --text: #FFFFFF;
+            --text-dim: #9CA3AF;
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+            --shadow-glow: 0 0 30px rgba(46, 204, 113, 0.4);
+            --shadow-neon: 0 0 20px rgba(46, 204, 113, 0.6);
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-head: 'Poppins', sans-serif;
+            --font-body: 'Montserrat', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0A1A0F; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        /* Page Loader */
+        .loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 99999;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; transition: opacity 0.5s, visibility 0.5s;
+        }
+        .loader.hidden { opacity: 0; visibility: hidden; }
+        .loader-paw {
+            font-size: 4rem; animation: bouncePaw 0.8s infinite alternate;
+        }
+        @keyframes bouncePaw { from { transform: translateY(0); } to { transform: translateY(-25px); } }
+
+        /* Particles Canvas (Fireflies) */
+        #fireflies-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+
+        /* Main App */
+        .app { position: relative; z-index: 1; }
+        .page {
+            display: none; min-height: 100vh;
+            padding: 20px 24px 40px; animation: fadeSlide 0.5s ease;
+        }
+        .page.active { display: block; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .container { max-width: 1300px; margin: 0 auto; }
+
+        /* Glass Navbar */
+        .navbar {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(8, 18, 10, 0.75); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(46, 204, 113, 0.15);
+            padding: 0 24px;
+        }
+        .navbar-inner {
+            max-width: 1300px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 72px;
+        }
+        .nav-brand {
+            font-family: var(--font-head); font-size: 1.8rem; font-weight: 800;
+            background: linear-gradient(135deg, #2ECC71, #F1C40F);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+        }
+        .nav-links {
+            display: flex; list-style: none; gap: 6px; align-items: center;
+        }
+        .nav-links a {
+            color: var(--text); text-decoration: none; font-weight: 500;
+            padding: 8px 16px; border-radius: 30px; transition: var(--transition);
+            cursor: pointer; font-size: 0.9rem;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(46,204,113,0.15); box-shadow: 0 0 12px rgba(46,204,113,0.3);
+        }
+        .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; }
+        .hamburger span { width: 26px; height: 3px; background: white; border-radius: 3px; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 28px; border-radius: 50px; font-weight: 600;
+            font-size: 0.95rem; border: none; cursor: pointer; transition: all 0.3s;
+            background: linear-gradient(135deg, #2ECC71, #27AE60);
+            color: white; box-shadow: 0 6px 20px rgba(46,204,113,0.4);
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(46,204,113,0.7); }
+        .btn-outline {
+            background: transparent; border: 2px solid var(--primary); box-shadow: none;
+        }
+        .btn-accent {
+            background: linear-gradient(135deg, #F1C40F, #F39C12);
+            color: #08120A; box-shadow: 0 6px 20px rgba(241,196,15,0.4);
+        }
+        .btn-sm { padding: 8px 18px; font-size: 0.8rem; }
+
+        /* Glass Card */
+        .glass-card {
+            background: var(--glass-bg); backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); padding: 28px;
+            transition: var(--transition);
+        }
+        .glass-card:hover { box-shadow: 0 0 30px rgba(46,204,113,0.25); }
+
+        /* Hero */
+        .hero {
+            position: relative; min-height: 90vh;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; flex-direction: column;
+        }
+        .hero-video-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -1; filter: brightness(0.3);
+        }
+        .hero-content h1 {
+            font-family: var(--font-head); font-size: 4rem; font-weight: 800;
+            background: linear-gradient(to right, #2ECC71, #F1C40F);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero-sub { font-size: 1.3rem; color: var(--text-dim); margin: 16px 0 32px; }
+
+        /* Animal Cards with 3D Tilt */
+        .grid-3d {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 24px; margin: 30px 0;
+        }
+        .animal-card {
+            background: var(--glass-bg); backdrop-filter: blur(16px);
+            border-radius: var(--radius-lg); padding: 20px; text-align: center;
+            border: 1px solid transparent; transition: all 0.4s; cursor: pointer;
+        }
+        .animal-card:hover {
+            border-color: var(--primary); box-shadow: 0 0 25px rgba(46,204,113,0.5);
+            transform: translateY(-8px);
+        }
+        .animal-emoji { font-size: 3.5rem; display: block; margin-bottom: 10px; }
+        .animal-name { font-weight: 700; font-family: var(--font-head); }
+
+        /* Stats */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px; margin: 40px 0;
+        }
+        .stat-number {
+            font-family: var(--font-head); font-size: 2.5rem; font-weight: 800;
+            background: linear-gradient(135deg, #F1C40F, #2ECC71);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* Booking Form */
+        .booking-form input, .booking-form select {
+            width: 100%; padding: 14px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+            color: white; margin-bottom: 16px; font-family: inherit;
+        }
+
+        /* QR Placeholder */
+        .qr-code {
+            width: 120px; height: 120px; background: white;
+            border-radius: 10px; display: grid; grid-template-columns: repeat(8,1fr);
+            gap: 2px; padding: 4px; margin: 0 auto;
+        }
+        .qr-dot { background: #000; border-radius: 1px; }
+
+        /* FAQ */
+        .faq-item { border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px; }
+        .faq-question { padding: 16px 0; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s; color: var(--text-dim); }
+        .faq-item.active .faq-answer { max-height: 200px; padding-bottom: 14px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 0; right: -100%; width: 260px; height: 100vh;
+                background: rgba(8,18,10,0.95); backdrop-filter: blur(30px);
+                flex-direction: column; padding: 80px 20px; transition: 0.4s;
+                z-index: 999;
+            }
+            .nav-links.open { right: 0; }
+            .hero h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div class="loader" id="loader"><span class="loader-paw">🐾</span><p>Loading Wildlife...</p></div>
+
+    <!-- Fireflies Canvas -->
+    <canvas id="fireflies-canvas"></canvas>
+
+    <div class="app">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-inner">
+                <div class="nav-brand" onclick="navigateTo('home')">🌿 Van Darshan</div>
+                <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+                <ul class="nav-links" id="navLinks">
+                    <li><a onclick="navigateTo('home')" class="active" data-page="home">Home</a></li>
+                    <li><a onclick="navigateTo('gallery')" data-page="gallery">Gallery</a></li>
+                    <li><a onclick="navigateTo('safari')" data-page="safari">Safari Info</a></li>
+                    <li><a onclick="navigateTo('booking')" data-page="booking">Book Ticket</a></li>
+                    <li><a onclick="navigateTo('dashboard')" data-page="dashboard">Dashboard</a></li>
+                    <li><a onclick="navigateTo('about')" data-page="about">About</a></li>
+                    <li><a onclick="navigateTo('login')" class="btn btn-sm btn-outline">Login</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- ==================== PAGES ==================== -->
+        <!-- HOME -->
+        <div class="page active" id="page-home">
+            <div class="hero">
+                <!-- Simulated video background via CSS -->
+                <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(0deg, #08120A 0%, rgba(8,18,10,0.7) 50%, #08120A 100%), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%232ECC71" fill-opacity="0.15" d="M0,160L48,170.7C96,181,192,203,288,192C384,181,480,139,576,138.7C672,139,768,181,864,186.7C960,192,1056,160,1152,138.7C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat center/cover; z-index:-1;"></div>
+                <div class="hero-content">
+                    <h1>Experience Wildlife<br>Like Never Before</h1>
+                    <p class="hero-sub">Book your safari adventure and witness majestic animals in their natural habitat.</p>
+                    <button class="btn btn-accent" onclick="navigateTo('booking')">🎟️ Book Safari Ticket</button>
+                </div>
+            </div>
+            <div class="container">
+                <!-- Stats -->
+                <div class="stats-grid glass-card">
+                    <div><span class="stat-number" data-target="15000">0</span><p>Happy Visitors</p></div>
+                    <div><span class="stat-number" data-target="300">0</span><p>Animal Species</p></div>
+                    <div><span class="stat-number" data-target="25">0</span><p>Years of Service</p></div>
+                    <div><span class="stat-number" data-target="100">0</span><p>% Safe Safari</p></div>
+                </div>
+                <!-- Popular Animals -->
+                <h2 style="font-family:var(--font-head); margin-top:40px;">🦁 Popular Animals</h2>
+                <div class="grid-3d" id="popularAnimals"></div>
+                <!-- About Zoo snippet -->
+                <div class="glass-card" style="margin-top:40px;">
+                    <h3>🌍 About Van Darshan</h3>
+                    <p>Nestled in 200 acres of lush greenery, Van Darshan offers a safe and thrilling safari experience. Our mission is conservation through education and unforgettable encounters.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOGIN -->
+        <div class="page" id="page-login">
+            <div class="container glass-card" style="max-width:400px; margin:60px auto;">
+                <h2>🔐 Login</h2>
+                <div class="form-group"><input type="email" placeholder="Email" id="loginEmail"></div>
+                <div class="form-group"><input type="password" placeholder="Password" id="loginPassword"></div>
+                <button class="btn" style="width:100%;" onclick="handleLogin()">Login</button>
+                <p style="margin-top:12px;">New visitor? <a onclick="navigateTo('register')" style="color:var(--primary);">Register</a></p>
+            </div>
+        </div>
+
+        <!-- REGISTER -->
+        <div class="page" id="page-register">
+            <div class="container glass-card" style="max-width:500px; margin:40px auto;">
+                <h2>📝 Register</h2>
+                <div class="form-group"><input placeholder="Full Name"></div>
+                <div class="form-group"><input type="date" placeholder="DOB"></div>
+                <div class="form-group"><select><option>Gender</option><option>Male</option><option>Female</option></select></div>
+                <div class="form-group"><input type="tel" placeholder="Mobile"></div>
+                <div class="form-group"><input type="email" placeholder="Email"></div>
+                <div class="form-group"><input type="password" placeholder="Password"></div>
+                <button class="btn" style="width:100%;" onclick="alert('Registration demo'); navigateTo('login')">Register</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="page" id="page-dashboard">
+            <div class="container">
+                <h2 style="font-family:var(--font-head);">👤 Dashboard</h2>
+                <div class="grid-3d">
+                    <div class="glass-card" onclick="navigateTo('booking')">🎟️ Book New Ticket</div>
+                    <div class="glass-card">📋 Booking History</div>
+                    <div class="glass-card">👤 My Profile</div>
+                    <div class="glass-card" onclick="navigateTo('ticket')">🎫 View Last Ticket</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAFARI INFO -->
+        <div class="page" id="page-safari">
+            <div class="container glass-card">
+                <h2>🕒 Safari Timings</h2>
+                <p>Morning: 6:00 AM - 10:00 AM</p>
+                <p>Evening: 2:00 PM - 6:00 PM</p>
+                <h3>Rules & Safety</h3>
+                <ul><li>Stay inside vehicle</li><li>No feeding animals</li><li>Keep silence</li></ul>
+            </div>
+        </div>
+
+        <!-- GALLERY -->
+        <div class="page" id="page-gallery">
+            <div class="container">
+                <h2 style="font-family:var(--font-head);">📸 Animal Gallery</h2>
+                <div class="grid-3d" id="galleryGrid"></div>
+            </div>
+        </div>
+
+        <!-- TICKET BOOKING -->
+        <div class="page" id="page-booking">
+            <div class="container glass-card" style="max-width:700px; margin:30px auto;">
+                <h2>🎟️ Book Safari Ticket</h2>
+                <div class="booking-form">
+                    <input type="text" id="visitorName" placeholder="Full Name">
+                    <input type="tel" id="visitorMobile" placeholder="Mobile">
+                    <input type="email" id="visitorEmail" placeholder="Email">
+                    <div style="display:flex; gap:16px;">
+                        <div style="flex:1;"><label>Adults (₹200)</label><input type="number" id="adults" value="1" min="0" onchange="calcTotal()"></div>
+                        <div style="flex:1;"><label>Children (₹100)</label><input type="number" id="children" value="0" min="0" onchange="calcTotal()"></div>
+                    </div>
+                    <input type="date" id="visitDate">
+                    <select id="timeSlot"><option>Morning 6-10 AM</option><option>Evening 2-6 PM</option></select>
+                    <div style="font-size:1.2rem; margin:12px 0;">Total: ₹<span id="totalPrice">200</span></div>
+                    <button class="btn btn-accent" style="width:100%;" onclick="proceedToPayment()">Proceed to Payment</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAYMENT -->
+        <div class="page" id="page-payment">
+            <div class="container glass-card" style="max-width:500px; margin:60px auto; text-align:center;">
+                <h2>💳 Demo Payment</h2>
+                <p>Total Amount: ₹<span id="payAmount">0</span></p>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <button class="btn" onclick="processPayment('UPI')">📱 UPI</button>
+                    <button class="btn" onclick="processPayment('Card')">💳 Credit/Debit Card</button>
+                    <button class="btn" onclick="processPayment('NetBanking')">🏦 Net Banking</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIGITAL TICKET -->
+        <div class="page" id="page-ticket">
+            <div class="container glass-card" style="max-width:600px; margin:40px auto; text-align:center;">
+                <h2>🎫 Safari Ticket</h2>
+                <div id="ticketContent">
+                    <p>Booking ID: <strong id="ticketId">#VAN-2024-001</strong></p>
+                    <p>Visitor: <span id="ticketName"></span></p>
+                    <p>Date: <span id="ticketDate"></span> | Time: <span id="ticketTime"></span></p>
+                    <p>Adults: <span id="ticketAdults"></span> | Children: <span id="ticketChildren"></span></p>
+                    <p>Total Paid: ₹<span id="ticketTotal"></span></p>
+                    <div class="qr-code" id="qrPlaceholder"></div>
+                    <p style="margin-top:10px;"><small>Scan QR at entry gate</small></p>
+                    <button class="btn btn-sm" onclick="window.print()">🖨️ Print Ticket</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABOUT & CONTACT -->
+        <div class="page" id="page-about">
+            <div class="container glass-card" style="max-width:700px; margin:40px auto;">
+                <h2>🌿 About Van Darshan</h2>
+                <p>Van Darshan is a premier wildlife safari park dedicated to conservation, education, and unforgettable experiences. Our expert guides ensure safe encounters with majestic animals.</p>
+                <h3>Developer</h3>
+                <p>Md Shamim Akhter | Full Stack Developer | Passionate about wildlife tech</p>
+                <h3>Contact</h3>
+                <p>📧 info@vandarshan.com | 📞 +91-9876543210</p>
+                <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('active')">Is online booking mandatory? ▼</div><div class="faq-answer">Yes, to avoid queues.</div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // --- FIREFLIES CANVAS ---
+            const canvas = document.getElementById('fireflies-canvas');
+            const ctx = canvas.getContext('2d');
+            let fireflies = [];
+            function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            window.addEventListener('resize', resizeCanvas); resizeCanvas();
+            class Firefly {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+                    this.radius = Math.random() * 2 + 1; this.alpha = Math.random();
+                    this.speedX = (Math.random() - 0.5) * 0.5; this.speedY = (Math.random() - 0.5) * 0.5;
+                }
+                update() {
+                    this.x += this.speedX; this.y += this.speedY;
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                    this.alpha += 0.02 * (Math.random() > 0.5 ? 1 : -1);
+                    if (this.alpha > 1) this.alpha = 1; if (this.alpha < 0.1) this.alpha = 0.1;
+                }
+                draw() {
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+                    ctx.fillStyle = `rgba(241, 196, 15, ${this.alpha})`; ctx.fill();
+                }
+            }
+            for (let i=0; i<80; i++) fireflies.push(new Firefly());
+            function animateFireflies() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                fireflies.forEach(f => { f.update(); f.draw(); });
+                requestAnimationFrame(animateFireflies);
+            }
+            animateFireflies();
+
+            // --- PAGE LOADER ---
+            window.addEventListener('load', () => {
+                setTimeout(() => document.getElementById('loader').classList.add('hidden'), 700);
+                animateCounters();
+                renderPopularAnimals();
+                renderGallery();
+            });
+
+            // --- GLOBAL STATE ---
+            let currentUser = null; // after login
+            let lastTicketData = {};
+
+            // --- NAVIGATION ---
+            window.navigateTo = function(page) {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const target = document.getElementById('page-' + page);
+                if (target) target.classList.add('active');
+                document.querySelectorAll('.nav-links a[data-page]').forEach(a => a.classList.remove('active'));
+                const link = document.querySelector(`.nav-links a[data-page="${page}"]`);
+                if (link) link.classList.add('active');
+                window.scrollTo(0,0);
+                document.getElementById('navLinks').classList.remove('open');
+                if (page === 'payment') updatePayAmount();
+                if (page === 'ticket') renderTicket();
+            };
+
+            // Hamburger
+            document.getElementById('hamburger').addEventListener('click', ()=>{
+                document.getElementById('navLinks').classList.toggle('open');
+            });
+
+            // --- ANIMALS DATA ---
+            const animals = [
+                {name:'Tiger', emoji:'🐅'}, {name:'Lion', emoji:'🦁'}, {name:'Leopard', emoji:'🐆'},
+                {name:'Elephant', emoji:'🐘'}, {name:'Deer', emoji:'🦌'}, {name:'Bear', emoji:'🐻'},
+                {name:'Crocodile', emoji:'🐊'}, {name:'Eagle', emoji:'🦅'}, {name:'Snake', emoji:'🐍'}
+            ];
+            function renderPopularAnimals() {
+                const grid = document.getElementById('popularAnimals');
+                if (grid) grid.innerHTML = animals.slice(0,4).map(a => `
+                    <div class="animal-card tilt-card">
+                        <span class="animal-emoji">${a.emoji}</span>
+                        <div class="animal-name">${a.name}</div>
+                    </div>`).join('');
+            }
+            function renderGallery() {
+                const grid = document.getElementById('galleryGrid');
+                if (grid) grid.innerHTML = animals.map(a => `
+                    <div class="animal-card tilt-card">
+                        <span class="animal-emoji">${a.emoji}</span>
+                        <div class="animal-name">${a.name}</div>
+                    </div>`).join('');
+            }
+
+            // --- BOOKING CALCULATION ---
+            window.calcTotal = function() {
+                const adults = parseInt(document.getElementById('adults').value) || 0;
+                const children = parseInt(document.getElementById('children').value) || 0;
+                const total = adults * 200 + children * 100;
+                document.getElementById('totalPrice').textContent = total;
+            };
+
+            window.proceedToPayment = function() {
+                const name = document.getElementById('visitorName').value.trim();
+                if (!name) { alert('Please enter visitor name'); return; }
+                // Store booking data
+                lastTicketData = {
+                    id: '#VAN-' + Date.now().toString().slice(-6),
+                    name: name,
+                    date: document.getElementById('visitDate').value,
+                    time: document.getElementById('timeSlot').value,
+                    adults: document.getElementById('adults').value,
+                    children: document.getElementById('children').value,
+                    total: document.getElementById('totalPrice').textContent
+                };
+                navigateTo('payment');
+            };
+
+            function updatePayAmount() {
+                document.getElementById('payAmount').textContent = lastTicketData.total || '0';
+            }
+
+            window.processPayment = function(method) {
+                alert(`Payment via ${method} successful! (Demo)`);
+                navigateTo('ticket');
+            };
+
+            function renderTicket() {
+                if (!lastTicketData.id) return;
+                document.getElementById('ticketId').textContent = lastTicketData.id;
+                document.getElementById('ticketName').textContent = lastTicketData.name;
+                document.getElementById('ticketDate').textContent = lastTicketData.date;
+                document.getElementById('ticketTime').textContent = lastTicketData.time;
+                document.getElementById('ticketAdults').textContent = lastTicketData.adults;
+                document.getElementById('ticketChildren').textContent = lastTicketData.children;
+                document.getElementById('ticketTotal').textContent = lastTicketData.total;
+                // Generate QR placeholder
+                const qrDiv = document.getElementById('qrPlaceholder');
+                qrDiv.innerHTML = Array(64).fill('<div class="qr-dot"></div>').join('');
+            }
+
+            // --- LOGIN ---
+            window.handleLogin = function() {
+                const email = document.getElementById('loginEmail').value;
+                if (email) {
+                    currentUser = { email };
+                    alert('Login successful (demo)');
+                    navigateTo('dashboard');
+                } else alert('Enter email');
+            };
+
+            // --- ANIMATED COUNTERS ---
+            function animateCounters() {
+                document.querySelectorAll('.stat-number[data-target]').forEach(el => {
+                    const target = +el.getAttribute('data-target');
+                    const duration = 2000;
+                    const start = performance.now();
+                    const update = (now) => {
+                        const progress = Math.min((now - start) / duration, 1);
+                        el.textContent = Math.floor(progress * target) + '+';
+                        if (progress < 1) requestAnimationFrame(update);
+                        else el.textContent = target + '+';
+                    };
+                    requestAnimationFrame(update);
+                });
+            }
+
+            // 3D Tilt effect (delegated)
+            document.addEventListener('mouseover', function(e) {
+                const card = e.target.closest('.tilt-card');
+                if (!card) return;
+                card.addEventListener('mousemove', function(e) {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width/2;
+                    const centerY = rect.height/2;
+                    card.style.transform = `perspective(600px) rotateX(${(y-centerY)/8}deg) rotateY(${(centerX-x)/8}deg)`;
+                });
+                card.addEventListener('mouseleave', function() {
+                    card.style.transform = 'perspective(600px) rotateX(0) rotateY(0)';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
